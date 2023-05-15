@@ -1,0 +1,52 @@
+\section{ERD}
+\subsection{}
+The tables are:
+\begin{enumerate}
+    \item Policy(\underbar{Number}, \underbar{Company}, Expiration)
+    \item Person(\underbar{ID}, Name)
+    \item Person.Record(\underbar{ID}$^FK$, Record)
+    \item Vehicle(\underbar{PlateNumber}, Manufacturer)
+    \item Car(\underbar{PlateNumber}, Type)
+    \item Bus(\underbar{PlateNumber}, Operator)
+    \item Insurance(\underbar{PlateNumber}$^{FK}$, \underbar{Number}$^{FK}$, \underbar{Company}$^{FK}$, Agent)
+    \item Drive(\underbar{ID}$^{FK}$, \underbar{PlateNumber}$^{FK}$)
+    \item Accident(\underbar{front.PlateNumber}$^{FK}$, \underbar{back.PlateNumber}$^{FK}$, Location, Data)
+\end{enumerate}
+
+\subsection{}
+\begin{enumerate}
+    \item Possible. It would require
+    that the Insurance table would not contain any entiries
+    with a PlateNumber key that equals to that of the car.
+    \item Possible. While a Person relates to precisely
+    one Vechicle - a Vechicle (Bus) might not be related
+    to any person.
+    \item Possible. There is no constraint on how many
+    different Persons drive the same Car, only the other way around.
+\end{enumerate}
+
+\subsection{}
+The phrasing on the question suggests exactly one officer
+arrives at each Accident so I will assume that is the case.\\
+Additionally - no information was specified as for how
+different officers are identified, hence I will assume each officer
+can be fully and uniquely described with a key called 'OfficerID'.\\
+
+Under these assumptions, the required information can be added
+by appending two attributes to the Accident relation: 'OfficerID' and 'OfficerArrivalTime'.\\
+After these changes, the table represeting accidents will look like:\\
+Accident(\underbar{front.PlateNumber}$^{FK}$, \underbar{back.PlateNumber}$^{FK}$, Location, Data, OfficerID, OfficerArrivalTime)
+
+\subsection{}
+Alice is correct.
+Since in both the solution of Bob and that of Charlie
+there is a unique connection going from the front accident
+participant to the back accident participant;
+This means that any Vechicle which participates
+in an accident as the front participant
+must participate in accidents as the front participant
+which \textbf{exactly one} other car
+\footnote{which will be the back participant in that context}.
+The problem with that is the fact that this means
+accidents in which multiple cars crash to the back of a single
+car (such as in the example before) cannot be described by the scheme.

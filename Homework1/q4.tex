@@ -1,0 +1,74 @@
+\section{Datalog}
+\subsection{}
+\begin{verbatim}
+CinemasShowingTarantinoMovie(Theater, Address) ←
+    Movies(Title, "Tarantino", _),
+    Cinemas(Theater, Address, _),
+    Schedule(Theater, Title, _).    
+\end{verbatim}
+
+\subsection{}
+\begin{verbatim}
+ActorPlayingMovie(Title, Actor) ← Movies(Title, _, Actor).
+
+TarantinoMovieNotActing(Title) ←
+    Movies(Title, "Tarantino", _),
+    not ActorPlayingMovie(Title, "Tarantino").
+\end{verbatim}
+
+\subsection{}
+\begin{verbatim}
+PlayedTarantinoMovie(Actor) ← Movies(_, "Tarantino", Actor).
+
+NeverPlayedForTarantino(Actor) ← 
+    Movies(_, _, Actor),
+    not PlayedTarantinoMovie(Actor).
+
+AnyoneNeverPlayedTarantino(Title) ←
+    Movies(Title, _, Actor),
+    NeverPlayedForTarantino(Actor).
+
+AllTarantinoActors(Title) ←
+    Movies(Title, _, _),
+    not AnyoneNeverPlayedTarantino(Title).
+\end{verbatim}
+
+
+\subsection{}
+\begin{verbatim}
+NotDirectorOfAllActors(Director) ←
+    Movies(_, _, Actor)
+    not Movies(_, Director, Actor).
+
+DirectorOfAllActors(Director) ←
+    Movies(_, Director, _),
+    not NotDirectorOfAllActors(Director).
+\end{verbatim}
+
+\subsection{}
+\begin{verbatim}
+Actor1PlayedWithout2(Actor1, Actor2, Title) ←
+    Movies(Title, _, Actor1),
+    not Movies(Title, _, Actor2).
+
+Actor1NeverPlayedWithout2(Actor1, Actor2) ← not Actor1PlayedWithout2(Actor1, Actor2, Title).
+
+ActorsInSameMovies(Actor1, Actor2) ←
+    Actor1NeverPlayedWithout2(Actor1, Actor2),
+    Actor1NeverPlayedWithout2(Actor2, Actor1).
+\end{verbatim}
+
+\subsection{}
+\begin{verbatim}
+Related(Actor1, Actor2) ←
+    Movies(Title, _, Actor1),
+    Movies(Title, _, Actor2).
+Related(Actor1, Actor2) ←
+    Related(Actor1, Actor),
+    Related(Actor, Actor2).
+
+NotRelated(Actor1, Actor2) ←
+    Movies(_, _, Actor1),
+    Movies(_, _, Actor2),
+    not Related(Actor1, Actor2).
+\end{verbatim}

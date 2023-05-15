@@ -1,0 +1,52 @@
+\section{RA,RC}
+\subsection{}
+\begin{enumerate}
+    \item \[
+        \pi_{Name}(
+            \sigma_{Company=BIG}(
+                Person\Join Drive \Join Insurance
+            )
+        )
+    \]
+    Note how $Person\Join Drive$ Is uniquely identified
+    by ID since a person cannot have more than one car,
+    hence ID is uniquely related to some PlateNumber so far.\\
+
+    In addition an entity of type Vehicle must relate
+    to at most one entity of Policy,
+    so a PlateNumber is uniquely related to some Number (from Policy).\\
+
+    Thus in $Person\Join Drive\Join Insurance$ - each ID
+    is uniquely related to a Number.
+    
+    \item $$\{n_{Name}\mid
+        \exists \left(i_{ID}, p_{PlateNumber}, n_{Number}, a_{Agent}\right):
+    $$$$
+        Person(i_{ID}, n_{Name})\wedge
+        Drive(i_{ID}, p_{PlateNumber})\wedge
+        Insurance(p_{PlateNumber}, n_{Number}, BIG, a_{Agent})
+    \}    
+    $$
+\end{enumerate}
+
+\subsection{}
+\subsection{}
+\begin{enumerate}
+    \item For readablility define:
+    $$AccidentDates=\pi_{Time}(Accident)$$
+    And the answer is:
+    $$
+        (AccidentDates\times AccidentDates)\setminus AccidentDates
+    $$
+\end{enumerate}
+
+\subsection{}
+\begin{enumerate}
+    \item The query returns the set of agenets that work with insurance
+    companies which insure every Manufacturer in the database.
+    \item That would not be possible since this query
+    can be reduced to the '÷' which can be further reduced
+    to the $\setminus$ operator (which we know is independent).\\
+\end{enumerate}
+
+\subsection{}

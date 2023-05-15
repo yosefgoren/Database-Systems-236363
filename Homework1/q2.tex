@@ -1,0 +1,17 @@
+\section{RA}
+To prove that the $\pi$ operator is independent of the other operators $\sigma$, $\rho$, $\setminus$, $\times$, and $\cup$, we need to show that applying any combination of these operators in any order produces the same result as applying the $\pi$ operator first and then applying the remaining operators.\\
+
+Let $R$ be a relation, and let $A$ be a subset of the attributes of $R$. Then the $\pi$ operator selects only those tuples of $R$ that have the specified attributes in $A$, and discards all other attributes.
+Now, let's consider the other operators:
+
+\begin{itemize}
+    \item $\sigma$ selects only those tuples that satisfy a specified condition.
+    \item $\rho$ renames a relation or its attributes.
+    \item $\setminus$ returns tuples that are in the first relation but not in the second relation.
+    \item $\times$ returns the Cartesian product of two relations.
+    \item $\cup$ returns all distinct tuples that are in either of two relations.
+\end{itemize}
+
+We can see that the $\pi$ operator only operates on the attributes of a relation, and does not consider the tuples themselves. Therefore, applying any combination of the other operators in any order will not affect the attributes selected by the $\pi$ operator.
+
+In other words, the $\pi$ operator can be applied before or after any combination of the $\sigma$, $\rho$, $\setminus$, $\times$, and $\cup$ operators without affecting the result. Hence, the $\pi$ operator is independent of these operators.
