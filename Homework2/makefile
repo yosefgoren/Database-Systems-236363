@@ -1,7 +1,11 @@
-IDS=211515606_205797095
-IDS_MIN=211515606-205797095
+ID1=$(shell cat id1.txt)
+ID2=$(shell cat id2.txt)
 
-$(IDS_MIN).zip: $(IDS).pdf Solution.py $(IDS).txt
+IDS=$(ID1)_$(ID2)
+IDS_MINUS=$(ID1)-$(ID2)
+
+
+$(IDS_MINUS).zip: $(IDS).pdf Solution.py $(IDS).txt
 	zip $@ $^
 	cp $@ /mnt/c/Users/pc/Desktop/
 
@@ -15,4 +19,4 @@ $(IDS).pdf: Report/main.pdf
 	cp $^ $@
 
 clean:
-	rm -rf $(IDS).pdf Solution.py $(IDS).txt $(IDS_MIN).zip
+	rm -rf $(IDS).pdf Solution.py $(IDS).txt $(IDS_MINUS).zip
