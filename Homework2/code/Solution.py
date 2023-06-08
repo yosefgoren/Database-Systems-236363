@@ -73,6 +73,9 @@ def create_values_exp(*fields: list)->str:
     return f"VALUES({strsum(new_fields)})"
 
 #AUX FUNCTIONS:
+def get_first_val(d: dict):
+    return list(d.values())[0]
+
 def strsum(strings: list, delim = ", ", delim_last = False)->str:
     res = ""
     for s in strings:
@@ -85,6 +88,13 @@ def log_query(*pargs):
     if print_logs:
         print("Final SQL query made:")
         print(*pargs)
+
+def sql_exe_list(query: str, default_res = []):
+    ret, res = sql_exe(query)
+    if ret != ReturnValue.OK or res[0] <= 0:
+        return default_res
+    return [get_first_val(res[1][i]) for i in range(res[0])]
+
 
 def sql_exe(query: str):
     """
@@ -101,7 +111,7 @@ def sql_exe(query: str):
         conn.commit()
     except DatabaseException.FOREIGN_KEY_VIOLATION:
         log_exception("seen FOREIGN_KEY_VIOLATION")
-        return ReturnValue.NOT_EXISTS, result #TODO: check what should be here.
+        return ReturnValue.NOT_EXISTS, result
     except DatabaseException.UNIQUE_VIOLATION:
         log_exception("seen UNIQUE_VIOLATION")
         return ReturnValue.ALREADY_EXISTS, result
@@ -132,7 +142,6 @@ def sql_exe_transcation(*queries: list):
 
 #CURD API:
 def createTables():
-    #TODO: check that if we need to handle table-already exists error or should ignore.
     def create_table_format(tname: str, scheme_attributes: list)->str:
         if len(scheme_attributes) < 1:
             raise "got empty list of attributes"
@@ -152,11 +161,6 @@ def addPhoto_query(photo: Photo)->str:
     return f"INSERT INTO {ptable} {create_values_exp(photo.getPhotoID(), photo.getDescription(), photo.getSize())}"
 
 def addPhoto(photo: Photo) -> ReturnValue:
-    """
-        photoID INT NOT NULL
-        description TEXT NOT NULL
-        size INT NOT NULL
-    """
     ret, res = sql_exe(addPhoto_query(photo))
     return ret
 
@@ -167,7 +171,6 @@ def getPhotoByID(photoID: int) -> Photo:
     return Photo(*(results[0].values()))
 
 def deletePhoto(photo: Photo) -> ReturnValue:
-    #TODO: add cascade properties to DB to cause automatic deletion of other items...
     ret, res = sql_exe(f"DELETE FROM {ptable} WHERE photoID = {photo.getPhotoID()};")
     return ret
 
@@ -175,13 +178,6 @@ def addDisk_query(disk: Disk)->str:
     return f"INSERT INTO {dtable} {create_values_exp(disk.getDiskID(), disk.getCompany(), disk.getSpeed(), disk.getFreeSpace(), disk.getCost())}"
 
 def addDisk(disk: Disk) -> ReturnValue:
-    """
-        diskID INT NOT NULL
-        company TEXT NOT NULL
-        speed INT NOT NULL
-        free_space INT NOT NULL
-        cost INT NOT NULL
-    """
     ret, res = sql_exe(addDisk_query(disk))
     return ret
 
@@ -197,11 +193,6 @@ def deleteDisk(diskID: int) -> ReturnValue:
     return ret
 
 def addRAM(ram: RAM) -> ReturnValue:
-    """
-        ramID INT NOT NULL
-        company TEXT NOT NULL
-        size INT NOT NULL
-    """
     ret, res = sql_exe(f"INSERT INTO {rtable} {create_values_exp(ram.getRamID(), ram.getCompany(), ram.getSize())}")
     return ret
 
@@ -221,19 +212,18 @@ def addDiskAndPhoto(disk: Disk, photo: Photo) -> ReturnValue:
 
 # Basic API:
 def addPhotoToDisk(photo: Photo, diskID: int) -> ReturnValue:
-    ret, res = sql_exe_transcation(#TODO: verify exceptions are handled correctly.
-        f"UPDATE {dtable} SET free_space=free_space-{photo.getSize()}",
+    ret, res = sql_exe_transcation(
+        f"UPDATE {dtable} SET free_space=free_space-{photo.getSize()} WHERE {dtable}.diskID={diskID}",
         f"INSERT INTO {podtable} {create_values_exp(photo.getPhotoID(), diskID)}"
     )
     return ret
 
 def removePhotoFromDisk(photo: Photo, diskID: int) -> ReturnValue:
     ret, res = sql_exe_transcation(
-        f"UPDATE {dtable} SET free_space=free_space+{photo.getSize()}",
+        f"UPDATE {dtable} SET free_space=free_space+{photo.getSize()} WHERE {dtable}.diskID={diskID}",
         f"DELETE FROM {podtable} WHERE photoID={photo.getPhotoID()} AND diskID={diskID}"
     )
     return ret
-
 
 def addRAMToDisk(ramID: int, diskID: int) -> ReturnValue:
     ret, res = sql_exe(f"INSERT INTO {rodtable} {create_values_exp(ramID, diskID)}")
@@ -257,21 +247,19 @@ def getTotalRamOnDisk(diskID: int) -> int:
     sum = res[1][0]['sum']
     return 0 if sum == None else sum
 
-def getCostForDescription(description: str) -> int:#TODO: basic test
+def getCostForDescription(description: str) -> int:
     ret, res = sql_exe(f"SELECT SUM({dtable}.cost*{ptable}.size)\
         FROM {ptable}, {podtable}, {dtable}\
-        WHERE {ptable}.description={description} AND {ptable}.photoID={podtable}.photoID AND {dtable}.diskID={podtable}.diskID"
+        WHERE {ptable}.description='{description}' AND {ptable}.photoID={podtable}.photoID AND {dtable}.diskID={podtable}.diskID"
     )
-    if ret != ReturnValue.Ok:
+    if ret != ReturnValue.OK:
         return -1
     sum = res[1][0]['sum']
     return 0 if sum == None else sum
 
 def getPhotosCanBeAddedToDisk(diskID: int) -> List[int]:
     ret, res = sql_exe(f"SELECT {ptable}.photoID FROM {ptable}\
-        WHERE {ptable}.size <= (SELECT free_space FROM\
-            {dtable} WHERE {dtable}.diskID={diskID}\
-        )\
+        WHERE {ptable}.size <= (SELECT free_space FROM {dtable} WHERE {dtable}.diskID={diskID})\
         ORDER BY {ptable}.photoID DESC\
         LIMIT 5"
     )
@@ -283,14 +271,13 @@ def getPhotosCanBeAddedToDisk(diskID: int) -> List[int]:
         photo_ids.append(*d.values())
     return photo_ids
     
-
 def getPhotosCanBeAddedToDiskAndRAM(diskID: int) -> List[int]:
-    ret, res = sql_exe(f"\
+    return sql_exe_list(f"\
         (\
             SELECT {ptable}.photoID FROM {ptable}\
             WHERE {ptable}.size <= (SELECT free_space FROM {dtable} WHERE {dtable}.diskID={diskID})\
         )\
-            INTRERSECT\
+        INTERSECT\
         (\
             SELECT {ptable}.photoID FROM {ptable}\
             WHERE {ptable}.size <=\
@@ -299,22 +286,19 @@ def getPhotosCanBeAddedToDiskAndRAM(diskID: int) -> List[int]:
                 WHERE {rtable}.ramID={rodtable}.ramID AND {rodtable}.diskID={diskID}\
             )\
         )\
-        ORDER BY {ptable}.photoID DESC\
+        ORDER BY photoID ASC\
         LIMIT 5"
     )
-    if ret != ReturnValue.OK or res[1] == None:
-        return []
-    photo_ids = []
-    for i in range(res[0]):
-        d = res[1][i]
-        photo_ids.append(*d.values())
-    return photo_ids
 
 def isCompanyExclusive(diskID: int) -> bool:
-    ret, res = sql_exe(f"SELECT diskID FROM {dtable} WHERE\
+    #TODO: debug
+    ret, res = sql_exe(f"\
+        SELECT diskID FROM {dtable} WHERE\
+        (\
             (SELECT company FROM {dtable} WHERE {dtable}.diskID={diskID})\
             =\
-            ALL(SELECT company FROM {rodtable}, {rtable} WHERE {rodtable}.ramID={rtable}.ramID) AND {rodtable}.diskID={diskID})\
+            ALL(SELECT company FROM {rodtable}, {rtable} WHERE {rodtable}.ramID={rtable}.ramID AND {rodtable}.diskID={diskID})\
+        )\
         AND\
             {dtable}.diskID={diskID}\
     ")
@@ -323,20 +307,58 @@ def isCompanyExclusive(diskID: int) -> bool:
     return (res[0] != 0)
 
 def isDiskContainingAtLeastNumExists(description : str, num : int) -> bool:
-    return True
-
+    ret, res = sql_exe(f"SELECT ({podtable}.diskID, COUNT({ptable}.description)) FROM {ptable}, {podtable}\
+        WHERE {ptable}.photoID={podtable}.photoID AND {ptable}.description='{description}'\
+        GROUP BY {podtable}.diskID\
+        HAVING COUNT(*) >= {num}"
+    )
+    if ret != ReturnValue.OK or res[1] == None:
+        return False
+    return (res[0] != 0)
 
 def getDisksContainingTheMostData() -> List[int]:
-    return []
+    return sql_exe_list(f"SELECT {dtable}.diskID FROM {dtable}, {podtable}, {ptable}\
+        WHERE {dtable}.diskID={podtable}.diskID AND {podtable}.photoID={ptable}.photoID\
+        GROUP BY {dtable}.diskID\
+        ORDER BY SUM({ptable}.size) DESC\
+        LIMIT 5"
+    )
 
 # Advanced API:
 def getConflictingDisks() -> List[int]:
-return []
-
+    return sql_exe_list(f"SELECT DISTINCT pod1.diskID AS did FROM {podtable} pod1, {podtable} pod2\
+        WHERE pod1.photoID=pod2.photoID AND pod1.diskID!=pod2.diskID\
+        ORDER BY did ASC"
+    )
 
 def mostAvailableDisks() -> List[int]:
-return []
+    return sql_exe_list(f"\
+        SELECT {dtable}.diskID FROM {dtable}\
+        ORDER BY\
+            (SELECT COUNT({ptable}.photoID) FROM {ptable} WHERE {ptable}.size <= {dtable}.free_space) DESC,\
+            {dtable}.speed DESC,\
+            {dtable}.diskID ASC\
+        LIMIT 5\
+        "
+    )
 
 
 def getClosePhotos(photoID: int) -> List[int]:
-return []
+    #TODO: avoid code duplication, use VIEWS
+    return sql_exe_list(f"\
+        (\
+            SELECT {podtable}.photoID FROM {podtable}\
+            WHERE\
+                {podtable}.diskID IN (SELECT {podtable}.diskID FROM {podtable} WHERE {podtable}.photoID={photoID})\
+            AND\
+                {podtable}.photoID!={photoID}\
+            GROUP BY {podtable}.photoID\
+                HAVING 2*COUNT({podtable}.diskID) >= (SELECT COUNT({podtable}.diskID) FROM {podtable} WHERE {podtable}.photoID={photoID})\
+        )\
+        UNION\
+        (\
+            SELECT {ptable}.photoID FROM {ptable}\
+            WHERE (SELECT COUNT(*) FROM {podtable} WHERE {podtable}.photoID={photoID})=0\
+        )\
+        ORDER BY photoID ASC\
+    ")
