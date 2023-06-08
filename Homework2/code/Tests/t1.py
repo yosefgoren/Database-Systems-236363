@@ -12,6 +12,10 @@ from Business.Disk import Disk
 import Utility.DBConnector as Connector
 from Tests.abstractTest import AbstractTest
 
+def cuts():
+    print("cutshort")
+    exit(0)
+
 
 class MyTest(AbstractTest):
 # Utilities ==================================================
@@ -215,7 +219,189 @@ class MyTest(AbstractTest):
         self.assertFalse(Solution.isCompanyExclusive(d2.getDiskID()))
         print("t12_isCompanyExclusive finished successfully")
 
+    #OTHERS:
+    def test_Disk_add_get_and_remove(self) -> None:
+        self.assertEqual(ReturnValue.OK, Solution.addDisk(Disk(1, "DELL", 10, 10, 10)), "Should work")
+        self.assertEqual(ReturnValue.OK, Solution.addDisk(Disk(2, "DELL", 10, 10, 10)), "Should work")
+        self.assertEqual(ReturnValue.OK, Solution.addDisk(Disk(3, "DELL", 10, 10, 10)), "Should work")
+        self.assertEqual(ReturnValue.ALREADY_EXISTS, Solution.addDisk(Disk(1, "DELL", 10, 10, 10)),
+                         "ID 1 ALREADY_EXISTS")
+        self.assertEqual(ReturnValue.BAD_PARAMS, Solution.addDisk(Disk(4, "HP", 0, 10, 10)), "Speed 0 is illegal")
+        self.assertEqual(ReturnValue.BAD_PARAMS, Solution.addDisk(Disk(0, "HP", 10, 10, 10)), "ID 0 is illegal")
+        self.assertEqual(ReturnValue.BAD_PARAMS, Solution.addDisk(Disk(4, "HP", 10, 10, 0)), "Cost 0 is illegal")
+        self.assertEqual(ReturnValue.BAD_PARAMS, Solution.addDisk(Disk(4, "HP", 10, -1, 10)), "Free space -1 is illegal")
+        self.assertEqual(ReturnValue.BAD_PARAMS, Solution.addDisk(Disk(None, "HP", 10, -1, 10)), "NULL is not allowed")
+        self.assertEqual(ReturnValue.BAD_PARAMS, Solution.addDisk(Disk(4, None, 10, 10, 10)), "NULL is not allowed")
+        self.assertEqual(ReturnValue.BAD_PARAMS, Solution.addDisk(Disk(4, "HP", None, 10, 10)), "NULL is not allowed")
+        self.assertEqual(ReturnValue.BAD_PARAMS, Solution.addDisk(Disk(4, "HP", 10, None, 10)), "NULL is not allowed")
+        self.assertEqual(ReturnValue.BAD_PARAMS, Solution.addDisk(Disk(4, "HP", 10, 10, None)), "NULL is not allowed")
+        self.assertEqual(ReturnValue.OK, Solution.addDisk(Disk(4, "HP", 10, 0, 10)), "Should work")
+        self.assertEqual(ReturnValue.BAD_PARAMS, Solution.addDisk(Disk(1, "HP", 0, 10, 10)),
+                         "BAD_PARAMS has precedence over ALREADY_EXISTS")
+        self.assertEqual(ReturnValue.BAD_PARAMS, Solution.addDisk(Disk(1, None, 10, 10, 10)),
+                         "BAD_PARAMS has precedence over ALREADY_EXISTS")
+        disk = Solution.getDiskByID(2)
+        self.assertEqual(disk.getDiskID(), 2, "Should work")
+        self.assertEqual(disk.getCompany(), "DELL", "Should work")
+        self.assertEqual(disk.getSpeed(), 10, "Should work")
+        self.assertEqual(disk.getCost(), 10, "Should work")
+        self.assertEqual(disk.getFreeSpace(), 10, "Should work")
+        self.assertEqual(ReturnValue.OK, Solution.deleteDisk(4), "Should work")
+        self.assertEqual(ReturnValue.NOT_EXISTS, Solution.deleteDisk(4), "ID 4 was already removed")
+        Solution.clearTables()
+        self.assertEqual(ReturnValue.NOT_EXISTS, Solution.deleteDisk(1), "Tables should be empty")
+        Solution.dropTables()
+        self.assertEqual(ReturnValue.ERROR, Solution.addDisk(Disk(1,"HP",1,1,1)), "Should error")
+        self.assertEqual(ReturnValue.ERROR, Solution.deleteDisk(1), "Should error")
+        disk = Solution.getDiskByID(1)
+        self.assertEqual(disk.getDiskID(), None, "Should return badDisk")
+        self.assertEqual(disk.getCompany(), None, "Should return badDisk")
+        self.assertEqual(disk.getSpeed(), None, "Should return badDisk")
+        self.assertEqual(disk.getCost(), None, "Should return badDisk")
+        self.assertEqual(disk.getFreeSpace(), None, "Should return badDisk")
+        Solution.createTables()
+        self.assertEqual(ReturnValue.OK, Solution.addDisk(Disk(1, "DELL", 10, 10, 10)), "Should work")
+        self.assertEqual(ReturnValue.OK,Solution.deleteDisk(1), "Should work")
+        self.assertEqual(ReturnValue.OK, Solution.addDisk(Disk(1, "HP", 5, 5, 5)), "Re-adding disk 1")
+
+    def test_Photo_add_get_and_remove(self) -> None:
+        self.assertEqual(ReturnValue.OK, Solution.addPhoto(Photo(1, "find minimum value", 10)), "Should work")
+        self.assertEqual(ReturnValue.OK, Solution.addPhoto(Photo(2, "find minimum value", 10)), "Should work")
+        self.assertEqual(ReturnValue.OK, Solution.addPhoto(Photo(3, "find minimum value", 10)), "Should work")
+        self.assertEqual(ReturnValue.ALREADY_EXISTS, Solution.addPhoto(Photo(1, "find minimum value", 10)),
+                         "ID 1 ALREADY_EXISTS")
+        self.assertEqual(ReturnValue.BAD_PARAMS, Solution.addPhoto(Photo(4, "find minimum value", -1)),
+                         "Size -1 is illegal")
+        self.assertEqual(ReturnValue.BAD_PARAMS, Solution.addPhoto(Photo(0, "find minimum value", 10)),
+                         "ID 0 is illegal")
+        self.assertEqual(ReturnValue.BAD_PARAMS, Solution.addPhoto(Photo(None, "find minimum value", 10)),
+                         "NULL is not allowed")
+        self.assertEqual(ReturnValue.BAD_PARAMS, Solution.addPhoto(Photo(4, None, 10)), "NULL is not allowed")
+        self.assertEqual(ReturnValue.BAD_PARAMS, Solution.addPhoto(Photo(4, "find minimum value", None)),
+                         "NULL is not allowed")
+        self.assertEqual(ReturnValue.OK, Solution.addPhoto(Photo(4, "find minimum value", 0)), "Should work")
+        self.assertEqual(ReturnValue.BAD_PARAMS, Solution.addPhoto(Photo(1, "find minimum value", -1)),
+                         "BAD_PARAMS has precedence over ALREADY_EXISTS")
+        self.assertEqual(ReturnValue.BAD_PARAMS, Solution.addPhoto(Photo(1, None, 0)),
+                         "BAD_PARAMS has precedence over ALREADY_EXISTS")
+        photo = Solution.getPhotoByID(2)
+        self.assertEqual(photo.getPhotoID(), 2, "Should work")
+        self.assertEqual(photo.getDescription(), "find minimum value", "Should work")
+        self.assertEqual(photo.getSize(), 10, "Should work")
+        self.assertEqual(ReturnValue.OK, Solution.deletePhoto(Photo(4, "find minimum value", 0)), "Should work")
+        Solution.dropTables()
+        self.assertEqual(ReturnValue.ERROR, Solution.addPhoto(Photo(1, "HP", 1)), "Should error")
+        self.assertEqual(ReturnValue.ERROR, Solution.deletePhoto(Photo(1, "HP", 1)), "Should error")
+        photo = Solution.getPhotoByID(1)
+        self.assertEqual(photo.getPhotoID(), None, "Should return badPhoto")
+        self.assertEqual(photo.getDescription(), None, "Should return badPhoto")
+        self.assertEqual(photo.getSize(), None, "Should return badPhoto")
+        Solution.createTables()
+        self.assertEqual(ReturnValue.OK, Solution.addPhoto(Photo(1, "DELL", 10)), "Should work")
+        self.assertEqual(ReturnValue.OK, Solution.deletePhoto(Photo(1, "DELL", 10)), "Should work")
+        self.assertEqual(ReturnValue.OK, Solution.addPhoto(Photo(2, "HP", 5)), "Re-adding RAM 1")
+
+    def test_add_and_remove_photo_from_disk(self):
+        self.assertEqual(ReturnValue.OK, Solution.addDiskAndPhoto(Disk(1, "DELL", 10, 10, 10),
+                         Photo(1, "stuff", 7)), "Should work")
+        disk = Solution.getDiskByID(1)
+        self.assertEqual(disk.getFreeSpace(), 10, "Should work")
+        self.assertEqual(ReturnValue.NOT_EXISTS, Solution.addPhotoToDisk(Photo(2,"stuff",0),1), "Photo does not exist")
+        self.assertEqual(ReturnValue.NOT_EXISTS, Solution.addPhotoToDisk(Photo(1, "stuff", 7), 2), "Disk does not exist")
+        self.assertEqual(ReturnValue.OK, Solution.addPhotoToDisk(Photo(1, "stuff", 7),1), "Should work")
+        disk = Solution.getDiskByID(1)
+        self.assertEqual(disk.getFreeSpace(), 3, "Should work")
+        self.assertEqual(ReturnValue.ALREADY_EXISTS, Solution.addPhotoToDisk(Photo(1, "stuff", 7),1),
+                         "ALREADY_EXISTS has precedence over BAD_PARAMS")
+        self.assertEqual(ReturnValue.OK, Solution.addPhoto(Photo(2, "stuff", 7)), "Should work")
+        self.assertEqual(ReturnValue.BAD_PARAMS, Solution.addPhotoToDisk(Photo(2, "stuff", 7),1),
+                         "Not enough space on disk")
+        self.assertEqual(ReturnValue.OK, Solution.addPhoto(Photo(3, "stuff", 3)), "Should work")
+        self.assertEqual(ReturnValue.OK, Solution.addPhotoToDisk(Photo(3, "stuff", 3), 1), "Should work")
+        disk = Solution.getDiskByID(1)
+        self.assertEqual(disk.getFreeSpace(), 0, "Should work")
+        self.assertEqual(ReturnValue.OK, Solution.removePhotoFromDisk(Photo(4, "stuff", 7),1),
+                         "Photo does not exist, but should still return OK")
+        self.assertEqual(ReturnValue.OK, Solution.removePhotoFromDisk(Photo(2, "stuff", 7), 1),
+                         "Photo is not running on disk, but should still return OK")
+        self.assertEqual(ReturnValue.OK, Solution.removePhotoFromDisk(Photo(1, "stuff", 7), 2),
+                         "Disk does not exist, but should still return OK")
+        self.assertEqual(ReturnValue.OK, Solution.removePhotoFromDisk(Photo(1, "stuff", 7), 1), "Should work")
+        disk = Solution.getDiskByID(1)
+        self.assertEqual(disk.getFreeSpace(), 7, "Should work")
+        self.assertEqual(ReturnValue.OK, Solution.removePhotoFromDisk(Photo(3, "stuff", 3), 1), "Should work")
+        disk = Solution.getDiskByID(1)
+        self.assertEqual(disk.getFreeSpace(), 10, "Should work")
+        self.assertEqual(ReturnValue.OK, Solution.removePhotoFromDisk(Photo(1, "stuff", 7), 1),
+                         "Photo is not running on disk, but should still return OK")
+        self.assertEqual(ReturnValue.OK, Solution.removePhotoFromDisk(Photo(3, "stuff", 3), 1),
+                         "Photo is not running on disk, but should still return OK")
+        disk = Solution.getDiskByID(1)
+        self.assertEqual(disk.getFreeSpace(), 10, "Should work")
+        Solution.clearTables()
+        self.assertEqual(ReturnValue.OK, Solution.addDiskAndPhoto(Disk(1, "DELL", 10, 10, 10),
+                                                                  Photo(1, "stuff", 3)), "Should work")
+        self.assertEqual(ReturnValue.OK, Solution.addDiskAndPhoto(Disk(2, "DELL", 10, 10, 10),
+                                                                  Photo(2, "stuff", 3)), "Should work")
+        disk = Solution.getDiskByID(1)
+        self.assertEqual(disk.getFreeSpace(), 10, "Should work")
+        disk = Solution.getDiskByID(2)
+        self.assertEqual(disk.getFreeSpace(), 10, "Should work")
+        self.assertEqual(ReturnValue.OK, Solution.addPhotoToDisk(Photo(2, "stuff", 3), 1), "Should work")
+        self.assertEqual(ReturnValue.OK, Solution.addPhotoToDisk(Photo(2, "stuff", 3), 2), "Should work")
+        disk = Solution.getDiskByID(1)
+        self.assertEqual(disk.getFreeSpace(), 7, "Should work")
+        disk = Solution.getDiskByID(2)
+        self.assertEqual(disk.getFreeSpace(), 7, "Should work")
+        self.assertEqual(ReturnValue.OK, Solution.deletePhoto(Photo(2, "stuff", 3)), "Should work")
+        disk = Solution.getDiskByID(1)
+        self.assertEqual(disk.getFreeSpace(), 10, "Photo should have been removed from disk")
+        disk = Solution.getDiskByID(2)
+        self.assertEqual(disk.getFreeSpace(), 10, "Photo should have been removed from disk")
+        self.assertEqual(ReturnValue.OK, Solution.addPhotoToDisk(Photo(1, "stuff", 3), 1), "Should work")
+        self.assertEqual(ReturnValue.OK, Solution.addPhotoToDisk(Photo(1, "stuff", 3), 2), "Should work")
+        disk = Solution.getDiskByID(1)
+        self.assertEqual(disk.getFreeSpace(), 7, "Should work")
+        disk = Solution.getDiskByID(2)
+        self.assertEqual(disk.getFreeSpace(), 7, "Should work")
+        self.assertEqual(ReturnValue.NOT_EXISTS, Solution.addPhotoToDisk(Photo(2, "stuff", 3), 1), "Photo doesn't exist")
+        disk = Solution.getDiskByID(1)
+        self.assertEqual(disk.getFreeSpace(), 7, "Should work")
+        self.assertEqual(ReturnValue.OK, Solution.removePhotoFromDisk(Photo(1, "stuff", 3),1), "Should work")
+        disk = Solution.getDiskByID(1)
+        self.assertEqual(disk.getFreeSpace(), 10, "Should work")
+        disk = Solution.getDiskByID(2)
+        self.assertEqual(disk.getFreeSpace(), 7, "Should work")
+        self.assertEqual(ReturnValue.OK, Solution.deletePhoto(Photo(1, "stuff", 3)), "Should work")
+        disk = Solution.getDiskByID(1)
+        self.assertEqual(disk.getFreeSpace(), 10, "Photo should have been removed from disk")
+        disk = Solution.getDiskByID(2)
+        self.assertEqual(disk.getFreeSpace(), 10, "Photo should have been removed from disk")
+        self.assertEqual(ReturnValue.OK, Solution.addPhoto(Photo(1,"stuff",3)), "Should work")
+        self.assertEqual(ReturnValue.OK, Solution.addPhotoToDisk(Photo(1, "stuff", 3), 1), "Should work")
+        self.assertEqual(ReturnValue.OK, Solution.addPhotoToDisk(Photo(1, "stuff", 3), 2), "Should work")
+        self.assertEqual(ReturnValue.OK,Solution.deleteDisk(1), "Should work")
+        disk = Solution.getDiskByID(1)
+        self.assertEqual(disk.getFreeSpace(), None, "Disk was deleted")
+        disk = Solution.getDiskByID(2)
+        self.assertEqual(disk.getFreeSpace(), 7, "Disk still has Photo on it")
+        Solution.dropTables()
+        self.assertEqual(ReturnValue.ERROR, Solution.addPhotoToDisk(Photo(1,"stuff",1),1), "Should error")
+        self.assertEqual(ReturnValue.ERROR, Solution.removePhotoFromDisk(Photo(1, "stuff", 1), 1), "Should error")
+        Solution.createTables()
+        self.assertEqual(ReturnValue.OK, Solution.addDiskAndPhoto(Disk(1, "DELL", 10, 10, 10),
+                                                                  Photo(1, "stuff", 7)), "Should work")
+        self.assertEqual(ReturnValue.OK, Solution.addPhotoToDisk(Photo(1, "stuff", 7), 1), "Should work")
+        self.assertEqual(ReturnValue.OK, Solution.deletePhoto(Photo(1, "stuff", 7)), "Should work")
+        self.assertEqual(ReturnValue.OK, Solution.addPhoto(Photo(1, "stuff", 17)), "Should work")
+        self.assertEqual(ReturnValue.BAD_PARAMS, Solution.addPhotoToDisk(Photo(1, "stuff", 17), 1), "Photo too big now")
+        self.assertEqual(ReturnValue.OK, Solution.deleteDisk(1), "Should work")
+        self.assertEqual(ReturnValue.OK, Solution.addDisk(Disk(1, "DELL", 10, 20, 10)), "Should work")
+        self.assertEqual(ReturnValue.OK, Solution.addPhotoToDisk(Photo(1, "stuff", 17), 1), "Disk big enough now")
+
 if __name__ == '__main__':
+    Solution.createTables()
+    Solution.clearTables()
     t = MyTest()
     t.t1_averagePhotosSizeOnDisk()
     t.t2_averagePhotosSizeOnDisk()
@@ -229,5 +415,14 @@ if __name__ == '__main__':
     t.t10_getPhotosCanBeAddedToDiskAndRAM()
     t.t11_mostAvailableDisks()
     t.t12_isCompanyExclusive()
+    
+    Solution.clearTables()
+    t.test_Disk_add_get_and_remove()
+    Solution.clearTables()
+    t.test_Photo_add_get_and_remove()
+    Solution.clearTables()
+    t.test_add_and_remove_photo_from_disk()
 
     #TODO: check removing from photo from a disk where it is not located (so don't increase free_space)
+
+    print("finsihed all t1, success")

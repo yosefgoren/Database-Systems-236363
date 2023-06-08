@@ -5,10 +5,9 @@ from Utility.Exceptions import DatabaseException
 from Business.Photo import Photo
 from Business.RAM import RAM
 from Business.Disk import Disk
-from psycopg2 import sql
+import psycopg2
 
 #GLOBAL SETTINGS:
-
 print_logs = False
 print_exceptions = False
 
@@ -130,6 +129,15 @@ def sql_exe(query: str):
     except DatabaseException.CHECK_VIOLATION:
         log_exception("seen CHECK_VIOLATION")
         return ReturnValue.BAD_PARAMS, result
+    except psycopg2.errors.UndefinedColumn:
+        log_exception("seen psycopg2.errors.UndefinedColumn")
+        return ReturnValue.BAD_PARAMS, result
+    except psycopg2.errors.UndefinedTable:
+        log_exception("seen psycopg2.errors.UndefinedTable")
+        return ReturnValue.ERROR, result
+    # except Exception:
+    #     log_exception("seen Exception")
+    #     return ReturnValue.ERROR, result
     return ReturnValue.OK, result
 
 def sql_exe_transcation(*queries: list):
@@ -149,7 +157,10 @@ def createTables():
         return f"CREATE TABLE {tname}({scheme})"
     
     create_table_queries = [create_table_format(tname, scheme) for tname, scheme in table_specifications.items()]
-    sql_exe_transcation(*create_table_queries)
+    try:
+        sql_exe_transcation(*create_table_queries)
+    except psycopg2.errors.DuplicateTable:
+        pass
 
 def clearTables():
     sql_exe_transcation(*[f"DELETE FROM {tname}" for tname in table_specifications.keys().__reversed__()])
@@ -165,13 +176,17 @@ def addPhoto(photo: Photo) -> ReturnValue:
     return ret
 
 def getPhotoByID(photoID: int) -> Photo:
-    ret, (num_results, results) = sql_exe(f"SELECT * FROM {ptable} WHERE photoID = {photoID};")
-    if len(results) < 1:
+    ret, res = sql_exe(f"SELECT * FROM {ptable} WHERE photoID = {photoID};")
+    if ret != ReturnValue.OK or res[0] < 1:
         return Photo.badPhoto()
-    return Photo(*(results[0].values()))
+    return Photo(*(res[1][0].values()))
 
 def deletePhoto(photo: Photo) -> ReturnValue:
-    ret, res = sql_exe(f"DELETE FROM {ptable} WHERE photoID = {photo.getPhotoID()};")
+    ret, res = sql_exe_transcation(
+        f"UPDATE {dtable} SET free_space=free_space+{photo.getSize()}\
+            WHERE {dtable}.diskID IN (SELECT {podtable}.diskID FROM {podtable} WHERE {podtable}.photoID={photo.getPhotoID()})",   
+        f"DELETE FROM {ptable} WHERE photoID = {photo.getPhotoID()}"
+    )
     return ret
 
 def addDisk_query(disk: Disk)->str:
@@ -182,14 +197,18 @@ def addDisk(disk: Disk) -> ReturnValue:
     return ret
 
 def getDiskByID(diskID: int) -> Disk:
-    ret, (num_results, results) = sql_exe(f"SELECT * FROM {dtable} WHERE diskID = {diskID};")
-    if len(results) < 1:
+    ret, res = sql_exe(f"SELECT * FROM {dtable} WHERE diskID = {diskID};")
+    if ret != ReturnValue.OK or res[0] < 1:
         return Disk.badDisk()
-    return Disk(*(results[0].values()))
+    return Disk(*(res[1][0].values()))
 
 
 def deleteDisk(diskID: int) -> ReturnValue:
     ret, res = sql_exe(f"DELETE FROM {dtable} WHERE diskID = {diskID};")
+    if ret == ReturnValue.OK:
+        rows_effected = res[0]
+        if rows_effected == 0:
+            return ReturnValue.NOT_EXISTS
     return ret
 
 def addRAM(ram: RAM) -> ReturnValue:
@@ -197,13 +216,17 @@ def addRAM(ram: RAM) -> ReturnValue:
     return ret
 
 def getRAMByID(ramID: int) -> RAM:
-    ret, (num_results, results) = sql_exe(f"SELECT * FROM {rtable} WHERE ramID = {ramID};")
-    if len(results) < 1:
+    ret, res = sql_exe(f"SELECT * FROM {rtable} WHERE ramID = {ramID};")
+    if ret != ReturnValue.OK or res[0] < 1:
         return RAM.badRAM()
-    return RAM(*(results[0].values()))
+    return RAM(*(res[1][0].values()))
 
 def deleteRAM(ramID: int) -> ReturnValue:
     ret, res = sql_exe(f"DELETE FROM {rtable} WHERE ramID = {ramID};")
+    if ret == ReturnValue.OK:
+        rows_effected = res[0]
+        if rows_effected == 0:
+            return ReturnValue.NOT_EXISTS
     return ret
 
 def addDiskAndPhoto(disk: Disk, photo: Photo) -> ReturnValue:
@@ -213,16 +236,22 @@ def addDiskAndPhoto(disk: Disk, photo: Photo) -> ReturnValue:
 # Basic API:
 def addPhotoToDisk(photo: Photo, diskID: int) -> ReturnValue:
     ret, res = sql_exe_transcation(
+        f"INSERT INTO {podtable} {create_values_exp(photo.getPhotoID(), diskID)}",
         f"UPDATE {dtable} SET free_space=free_space-{photo.getSize()} WHERE {dtable}.diskID={diskID}",
-        f"INSERT INTO {podtable} {create_values_exp(photo.getPhotoID(), diskID)}"
     )
     return ret
 
 def removePhotoFromDisk(photo: Photo, diskID: int) -> ReturnValue:
     ret, res = sql_exe_transcation(
-        f"UPDATE {dtable} SET free_space=free_space+{photo.getSize()} WHERE {dtable}.diskID={diskID}",
-        f"DELETE FROM {podtable} WHERE photoID={photo.getPhotoID()} AND diskID={diskID}"
+        f"UPDATE {dtable} SET free_space=free_space\
+            +(SELECT SUM({ptable}.size) FROM {ptable}, {podtable}\
+                WHERE {ptable}.photoID={photo.getPhotoID()} AND {podtable}.photoID={ptable}.photoID AND {podtable}.diskID={diskID}\
+        )\
+        WHERE {dtable}.diskID={diskID}",
+        f"DELETE FROM {podtable} WHERE photoID={photo.getPhotoID()} AND diskID={diskID}",
     )
+    if ret == ReturnValue.BAD_PARAMS:
+        return ReturnValue.OK
     return ret
 
 def addRAMToDisk(ramID: int, diskID: int) -> ReturnValue:
@@ -291,7 +320,6 @@ def getPhotosCanBeAddedToDiskAndRAM(diskID: int) -> List[int]:
     )
 
 def isCompanyExclusive(diskID: int) -> bool:
-    #TODO: debug
     ret, res = sql_exe(f"\
         SELECT diskID FROM {dtable} WHERE\
         (\
@@ -344,7 +372,6 @@ def mostAvailableDisks() -> List[int]:
 
 
 def getClosePhotos(photoID: int) -> List[int]:
-    #TODO: avoid code duplication, use VIEWS
     return sql_exe_list(f"\
         (\
             SELECT {podtable}.photoID FROM {podtable}\

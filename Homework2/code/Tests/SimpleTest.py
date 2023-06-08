@@ -1,3 +1,6 @@
+import sys
+sys.path.append('..')
+
 import unittest
 import Solution
 from Utility.ReturnValue import ReturnValue
