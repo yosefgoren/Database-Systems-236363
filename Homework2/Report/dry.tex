@@ -1,0 +1,48 @@
+\part{Dry}
+
+\section{Why is ChatGPT wrong}
+The current solution by ChatGPT works as follows:
+\begin{itemize}
+	\item It returns pairs of students in lexicographic order - in which:
+	\item If we look at the set of courses taken by both students take -
+		the minimal grade of the first student is smaller than that of the second student 
+\end{itemize}
+
+\section{Mistake Illustration - Counter Example}
+One possible counter example to the sol of ChatGPT is:
+\begin{center}
+	\begin{tabular}{| c | c | c | c |}
+		\hline
+		StudentName & Course & Grade & Semester\\ 
+		\hline
+		adam & db & 99 & winter23\\ 
+		\hline
+		bob & db & 88 & winter23\\  
+		\hline
+	\end{tabular}
+\end{center}
+His solution on this table would be $\emptyset$ (which is wrong) - 
+since adam is smaller than bob lexicographicly
+but adams grade is higher than that of bob.\\
+Insead, the correct solution would be $\{adam,bob\}$.\\
+Hence ChatGPT's solution is wrong.
+
+\section{A correct implementation}
+Our alternative implementation is:
+\begin{qv}
+(
+	SELECT l1.StudentName, l2.StudentName
+	FROM Learns l1, Learns l2
+	WHERE l1.StudentName!=l2.StudentName
+		AND l1.Semester=l2.Semester
+		AND l1.Grade<l2.Grade
+		AND l1.Course=l2.Course
+)
+-
+(
+	SELECT l1.StudentName, l2.StudentName
+	FROM Learns l1, Learns l2
+	WHERE l1.Semester!=l2.Semester
+		OR l1.Course!=l2.Course
+)
+\end{qv}

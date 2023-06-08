@@ -7,6 +7,8 @@
 \usepackage{hyperref} 
 \usepackage[labelfont=bf]{caption}
 
+\usepackage{fancyvrb}
+
 \newtheorem{theorem}{Theorem}
 \newtheorem{lemma}[theorem]{Lemma}
 \newtheorem{corollary}{Corollary}[theorem]
@@ -17,6 +19,12 @@
 \DeclareMathOperator*{\pr}{Pr}
 \DeclareMathOperator*{\approach}{\longrightarrow}
 \DeclareMathOperator*{\eq}{=}
+
+
+\newenvironment{qv}
+{\quote\Verbatim}
+{\endVerbatim\endquote}
+
 
 % grey paper
 \usepackage{xcolor}
@@ -52,7 +60,8 @@
 \author{Yosef Goren \& Yonatan Kahalani}
 \title{Database-Systems-236363 Homework 2 Report}
 \maketitle
-\input{dry.tex}
+
 \input{wet.tex}
+\input{dry.tex}
 
 \end{document}
