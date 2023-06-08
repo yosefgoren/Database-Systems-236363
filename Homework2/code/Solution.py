@@ -260,6 +260,10 @@ def addRAMToDisk(ramID: int, diskID: int) -> ReturnValue:
 
 def removeRAMFromDisk(ramID: int, diskID: int) -> ReturnValue:
     ret, res = sql_exe(f"DELETE FROM {rodtable} WHERE ramID={ramID} AND diskID={diskID}")
+    if ret == ReturnValue.OK:
+        rows_effected = res[0]
+        if rows_effected == 0:
+            return ReturnValue.NOT_EXISTS
     return ret
 
 def averagePhotosSizeOnDisk(diskID: int) -> float:
@@ -386,6 +390,8 @@ def getClosePhotos(photoID: int) -> List[int]:
         (\
             SELECT {ptable}.photoID FROM {ptable}\
             WHERE (SELECT COUNT(*) FROM {podtable} WHERE {podtable}.photoID={photoID})=0\
+                AND {ptable}.photoID!={photoID}\
         )\
         ORDER BY photoID ASC\
+        LIMIT 10\
     ")
