@@ -17,7 +17,38 @@ The keys:
 	Thus we are left with $K_2$ while not more attributes can be removed -
 	so by the correctness of the algorithm - $K_2$ is a proper-key.
 \end{itemize}
+
 \subsection{}
+Let the decomposition be:
+$X=\{R_1(A,C,G), R_2(B,D,E), R_3(B,D,G)\}$.\\
+Running the algorithm:
+\begin{center}
+	\begin{tabular}{| c | c | c | c | c | c |}
+		\hline
+		A	&B	&C	&D	&E	&G	\\\hline
+		a	&	&c	&	&	&g	\\\hline
+			&b	&	&d	&e	&	\\\hline
+			&b	&	&d	&	&g	\\\hline
+	\end{tabular}
+	$\Rightarrow_{BD\rightarrow G}$
+	\begin{tabular}{| c | c | c | c | c | c |}
+		\hline
+		A	&B	&C	&D	&E	&G	\\\hline
+		a	&	&c	&	&	&g	\\\hline
+			&b	&	&d	&e	&g	\\\hline
+			&b	&	&d	&	&g	\\\hline
+	\end{tabular}
+	$\Rightarrow_{G\rightarrow ABCD}$
+	\begin{tabular}{| c | c | c | c | c | c |}
+		\hline
+		A	&B	&C	&D	&E	&G	\\\hline
+		a	&	&c	&	&	&g	\\\hline
+		a	&b	&c	&d	&e	&g	\\\hline
+			&b	&	&d	&	&g	\\\hline
+	\end{tabular}
+\end{center}
+Thus by the correctness of the algorithm, the decomposition
+is information preserving.
 
 \subsection{}
 The claim is correct.\\

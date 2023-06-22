@@ -1,4 +1,4 @@
-db.s.aggregate([
+db.SeniorStaff.aggregate([
 	{
 		$match: {
 			seniority_year: { $gt: 2013 }

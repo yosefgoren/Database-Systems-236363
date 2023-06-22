@@ -30,8 +30,10 @@ Now we show for each attribute in $R$ that it can be derrived from $K$.
 
 \subsection{}
 \begin{enumerate}
-	\item The claim is correct.\\
+	\item
+	The claim is correct.\\
 		Proof.\\
+		\textbf{Direction '$\Rightarrow$'}
 		\begin{enumerate}
 			\item $B\rightarrow G$ (from $F$)
 			\item $BG\rightarrow G$ (Augmentation)
@@ -42,7 +44,13 @@ Now we show for each attribute in $R$ that it can be derrived from $K$.
 			\item $BG\rightarrow H$ (e, f, Transitivity)
 			\item $BH\rightarrow EGH$ (b,c,g, Union)
 		\end{enumerate}
-		\item The claim is incorrect.\\
+		\textbf{Direction '$\Leftarrow$'}
+		Let $A_i\notin F$.\\
+		$\Rightarrow$ $A_i$ cannot be derrived from the left operand of $f$\\
+		$\Rightarrow$ The left operand of $f$ is not a super-key\\
+		$\Rightarrow$ $(R,F)\notin BCNF$
+	\item
+	The claim is incorrect.\\
 		\textbf{Example.}\\
 		Let $R := \{(a_1, b_1, c_1, d_1, e_1, g_1, h_1), (a_2, b_2, c_1, d_1, e_2, g_2, h_1)\}$.\\
 		Note that $R\models F$, while $R\not\models (CH\rightarrow AE)$ thus,

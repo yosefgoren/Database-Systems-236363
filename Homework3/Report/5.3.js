@@ -1,4 +1,4 @@
-db.s.aggregate([
+db.SeniorStaff.aggregate([
 	{
 	  $group: {
 		_id: {
@@ -19,6 +19,8 @@ db.s.aggregate([
 		  }
 		}
 	  }
+	},
+	{
+		$sort: {_id: 1}
 	}
   ])
-  
