@@ -6,7 +6,7 @@ IDS=$(ID1)_$(ID2)
 IDS_MINUS=$(ID1)-$(ID2)
 
 Submission/$(IDS_MINUS).zip: Submission/$(IDS).pdf
-	zip $@ $^
+	cd Submission && zip $(IDS_MINUS).zip $(IDS).pdf
 	cp $@ /mnt/c/Users/$(USER)/Desktop/
 
 Submission/$(IDS).pdf: Report/main.pdf

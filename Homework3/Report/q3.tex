@@ -1,1 +1,105 @@
 \section{Scheme Analysis}
+\subsection{}
+The key is $K := ADEG$.\\
+Now we show for each attribute in $R$ that it can be derrived from $K$.
+\begin{itemize}
+	\item $H$: 
+	\begin{itemize}
+		\item $G\rightarrow H$ (from $F$)
+		\item $K\rightarrow KH$ (Augmentation)
+		\item $KH\rightarrow H$ (Reflexivity)
+		\item $K\rightarrow H$ (Transitivity)
+	\end{itemize}
+	\item $B$: 
+	\begin{itemize}
+		\item $G\rightarrow B$ (from $F$)
+		\item $K\rightarrow KB$ (Augmentation)
+		\item $KB\rightarrow B$ (Reflexivity)
+		\item $K\rightarrow B$ (Transitivity)
+	\end{itemize}
+	\item $C$: 
+	\begin{itemize}
+		\item $E\rightarrow CH$ (from $F$)
+		\item $CH\rightarrow C$ (Reflexivity)
+		\item $E\rightarrow C$ (from $F$)
+		\item $K\rightarrow KC$ (Augmentation)
+		\item $KC\rightarrow C$ (Reflexivity)
+		\item $K\rightarrow C$ (Transitivity)
+	\end{itemize}
+\end{itemize}
+
+\subsection{}
+\begin{enumerate}
+	\item The claim is correct.\\
+		Proof.\\
+		\begin{enumerate}
+			\item $B\rightarrow G$ (from $F$)
+			\item $BG\rightarrow G$ (Augmentation)
+			\item $BG\rightarrow E$ (from $F$)
+			\item $G\rightarrow H$ (from $F$)
+			\item $BG\rightarrow BH$ (Augmentation)
+			\item $BH\rightarrow H$ (Reflexivity)
+			\item $BG\rightarrow H$ (e, f, Transitivity)
+			\item $BH\rightarrow EGH$ (b,c,g, Union)
+		\end{enumerate}
+		\item The claim is incorrect.\\
+		\textbf{Example.}\\
+		Let $R := \{(a_1, b_1, c_1, d_1, e_1, g_1, h_1), (a_2, b_2, c_1, d_1, e_2, g_2, h_1)\}$.\\
+		Note that $R\models F$, while $R\not\models (CH\rightarrow AE)$ thus,
+		from the soundness theorem - we can deduce there is no proof.
+\end{enumerate}
+
+\subsection{}
+\begin{center}
+	\begin{tabular}{| c | c | c | c | c | c | c |}
+		\hline
+		A	&B	&C	&D	&E	&G	&H	\\\hline
+		a	&b	&	&	&	&g	&	\\\hline
+			&b	&c	&	&e	&	&	\\\hline
+			&	&	&d	&e	&	&h	\\\hline
+	\end{tabular}
+	$\Longrightarrow_{B\rightarrow G}$
+	\begin{tabular}{| c | c | c | c | c | c | c |}
+		\hline
+		A	&B	&C	&D	&E	&G	&H	\\\hline
+		a	&b	&	&	&	&g	&	\\\hline
+			&b	&c	&	&e	&g	&	\\\hline
+			&	&	&d	&e	&	&h	\\\hline
+	\end{tabular}
+	$\Longrightarrow_{BG\rightarrow E}$
+	\begin{tabular}{| c | c | c | c | c | c | c |}
+		\hline
+		A	&B	&C	&D	&E	&G	&H	\\\hline
+		a	&b	&	&	&e	&g	&	\\\hline
+			&b	&c	&	&e	&g	&	\\\hline
+			&	&	&d	&e	&	&h	\\\hline
+	\end{tabular}
+	$\Longrightarrow_{E\rightarrow CH}$
+	\begin{tabular}{| c | c | c | c | c | c | c |}
+		\hline
+		A	&B	&C	&D	&E	&G	&H	\\\hline
+		a	&b	&c	&	&e	&g	&h	\\\hline
+			&b	&c	&	&e	&g	&h	\\\hline
+			&	&c	&d	&e	&	&h	\\\hline
+	\end{tabular}
+	$\Longrightarrow_{C\rightarrow D}$
+	\begin{tabular}{| c | c | c | c | c | c | c |}
+		\hline
+		A	&B	&C	&D	&E	&G	&H	\\\hline
+		a	&b	&c	&d	&e	&g	&h	\\\hline
+			&b	&c	&d	&e	&g	&h	\\\hline
+			&	&c	&d	&e	&	&h	\\\hline
+	\end{tabular}
+\end{center}
+
+\subsection{}
+\begin{center}
+\begin{tabular}{| c | c | c |}
+	\hline
+			&$X_2$	&$X_3$	\\\hline
+	BCNF	&\cmark	&\xmark	\\\hline
+	3NF		&\cmark	&\xmark	\\\hline
+\end{tabular}
+\end{center}
+
+Both \xmark 's can be demostrated by $C\rightarrow D$.\\

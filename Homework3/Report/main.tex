@@ -6,8 +6,16 @@
 \usepackage{graphicx}
 \usepackage{hyperref} 
 \usepackage[labelfont=bf]{caption}
-
+\usepackage{verbatim}
 \usepackage{fancyvrb}
+\newcommand{\verbatimfile}[1]{%
+  \VerbatimInput[%
+    baselinestretch=1,
+    fontsize=\footnotesize,
+    obeytabs=true,
+    tabsize=2
+  ]{#1}%
+}
 
 \newtheorem{theorem}{Theorem}
 \newtheorem{lemma}[theorem]{Lemma}
@@ -48,12 +56,18 @@
     tabsize=2
 }
 
+\usepackage{amssymb}% http://ctan.org/pkg/amssymb
+\usepackage{pifont}% http://ctan.org/pkg/pifont
+\newcommand{\cmark}{\ding{51}}%
+\newcommand{\xmark}{\ding{55}}%
+
 \lstset{style=mystyle}
 
 
 \newenvironment{qv}
 {\quote\Verbatim}
 {\endVerbatim\endquote}
+
 
 \begin{document}
 \author{Yosef Goren \& Yonatan Kahalani}

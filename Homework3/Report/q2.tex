@@ -1,1 +1,42 @@
 \section{Scheme Analysis}
+\subsection{}
+The keys:
+\begin{itemize}
+	\item $K_1:= EG$.\\
+	By applying the algorithm we see:\\
+	Note that $A$ can be derrived from $BCDEG$ by the FD $G\rightarrow ABCD$
+	and the Decomposition property.\\
+	By applying the algorithm for finding keys 3 more times,
+	we get rid of $BCD$. And we are left with $EG$.\\
+	Note that $E\not\rightarrow G$ and $G\not\rightarrow E$ - 
+	hence $K_1$ is a proper-key.
+
+	\item $K_2:= ABCD$.\\
+	By the rule $BD\rightarrow G$ we get rid of $G$,
+	and by the rule $AC\rightarrow D$ we get rid of $D$.\\
+	Thus we are left with $K_2$ while not more attributes can be removed -
+	so by the correctness of the algorithm - $K_2$ is a proper-key.
+\end{itemize}
+\subsection{}
+
+\subsection{}
+The claim is correct.\\
+\textbf{Proof.}\\
+Let $K:=A_{i_1} A_{i_2} ... A_{i_k}$ s.t. $K$ is the left operand in $f$,\\
+and so $\forall j\in\{1... k\}: i_j\in \{1...n\}$.\\
+
+Now we show that $K$ is a super-key:\\
+Let $j\in\{1...n\}: A_j\notin K$.\\
+$A_j$ must be the right operand of $f$,
+Thus by Decomposition be can derive that $K\rightarrow A_j$.
+Thus $K^+=R$.\\
+Thus $F$ satisfies the BCNF property and from a theorem from the lectures,
+this sufficient to show that $(R,F)\in BCNF$.
+
+\subsection{}
+The claim is incorrect.\\
+\textbf{Example.}\\
+Let $F:=A_1\rightarrow A_2A_3$.\\
+Each $A_i$ appears exactly once. But by the definition of a minimal cover - 
+on the right side of each operand in the cover - there must be exactly one
+attribute.
