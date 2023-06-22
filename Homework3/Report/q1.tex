@@ -1,0 +1,70 @@
+\section{Scheme Analysis}
+\subsection{}
+$X$ is not in $BCNF$.\\
+Proof.\\
+From transitivity and reflexivity, $CG\rightarrow H$.\\
+Note $CG$ is not a superkey in $R_3$ since $D$ is not implied
+by any FD since it only appears as the left operand.\\
+Thus $CG \rightarrow D$ is not satisfied and $R_3\notin BCNF \Rightarrow X\notin BCNF$.
+
+\subsection{}
+No.\\
+Proof.
+\begin{itemize}
+	\item $e$ only appears as the right operand.
+	\item $e$ is not prime.
+	\item Any properkey does not contain $e$.
+	\item $c$ is not a superkey in $R_2$.
+	\item $c\rightarrow e$ violates the properties of $3NF$.
+\end{itemize}
+
+\subsection{}
+By running the algorithm seen in class we get to:
+\begin{center}
+	\begin{tabular}{| c | c | c | c | c | c | c |}
+		\hline
+		A	&B	&C	&D	&E	&H	&G	\\
+		\hline
+			&b	&c	&d	&	&	&	\\
+		\hline
+			&	&c	&	&e	&h	&	\\
+		\hline
+			&	&c	&d	&	&h	&g	\\
+		\hline
+	\end{tabular}
+	$\Longrightarrow_{C\rightarrow E}$
+	\begin{tabular}{| c | c | c | c | c | c | c |}
+		\hline
+		A	&B	&C	&D	&E	&H	&G	\\
+		\hline
+			&b	&c	&d	&\textbf{e}	&	&	\\
+		\hline
+			&	&c	&	&e	&h	&	\\
+		\hline
+			&	&c	&d	&\textbf{e}	&h	&g	\\
+		\hline
+	\end{tabular}
+\end{center}
+And thus no more steps can be deduces and via the correctness of the algorithm -
+the decomposition does not preserve information.
+
+\subsection{}
+Let
+$$
+R := \{(a_1, b, c, d, e, g_1, a_1), (a_2, b, c, d, e, g_2, a_2)\}
+$$
+Note that $R\models F$,
+additionally $(a_2, b, c, d, e, g_1, a_2)\in R_1\bowtie R_2\bowtie R_3$,
+thus the decomposition does not preserve information.
+
+
+\subsection{}
+First we apply the confusing algorithm seen in the tutorial:
+
+\begin{itemize}
+	\item $Z_F := \{A,H\}$
+	\item On inspecting $R_1$:\\ $\{A,H\}\cup (\{A,H\}\cap (\{A,H\}\cap \{B,C,D\})^+\cap \{B,C,D\})=\{A,H\}$
+	\item On inspecting $R_2$:\\ $B\notin R_2 \Rightarrow  B\notin Z_F$
+	\item On inspecting $R_3$:\\ $B\notin R_3 \Rightarrow  B\notin Z_F$
+\end{itemize}
+Thus $B\notin Z_F\Rightarrow $ Dependencies are not preserved.
