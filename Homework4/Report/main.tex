@@ -208,8 +208,6 @@ MATCH (b:Breed)
 OPTIONAL MATCH (b)<-[:OF_BREED]-(c:Cat)
 RETURN b.name, count(c)
 \end{lstlisting}
-Here is what it yields on our example:\\
-\includegraphics[width=\textwidth]{kittens2.png}
 
 Running this on our example yields:\\
 \begin{center}
