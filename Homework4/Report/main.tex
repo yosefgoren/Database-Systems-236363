@@ -166,4 +166,125 @@ for all tuples a in A:
     \item $W_2(x), W_1(x), W_2(x), R_2(y)$
 \end{enumerate}
 
+\section{}
+For the purpose of providing an example for each
+solution we have provided in this question we have
+created an example database and added a few kittens to it, and ran the
+solution queries on each of them.\\
+The following code creates the content of our databse:
+\begin{lstlisting}
+CREATE (b1:Breed {name: 'Siamese', origin: 'Thailand', lifespan: '12-15 years'})
+CREATE (b2:Breed {name: 'Bengal', origin: 'United States', lifespan: '12-16 years'})
+CREATE (b2)-[:DESCENDANT_OF]->(b1)
+
+CREATE (o1:Owner {name: 'John Smith', address: '123 Main St'})
+CREATE (o2:Owner {name: 'Emily Johnson', address: '456 Elm St'})
+
+CREATE (c1:Cat {name: 'Max', age: 3, gender: 'Male'})
+CREATE (c2:Cat {name: 'Luna', age: 2, gender: 'Female'})
+CREATE (c3:Cat {name: 'Oliver', age: 4, gender: 'Male'})
+CREATE (c4:Cat {name: 'Chloe', age: 1, gender: 'Female'})
+CREATE (c5:Cat {name: 'Hatol', age:7, gender: 'Male'})
+
+CREATE (c1)-[:BELONGS_TO {relationship_length: 2}]->(o1)
+CREATE (c2)-[:BELONGS_TO {relationship_length: 1}]->(o1)
+CREATE (c3)-[:BELONGS_TO {relationship_length: 1}]->(o2)
+CREATE (c4)-[:BELONGS_TO {relationship_length: 1}]->(o2)
+CREATE (c5)-[:BELONGS_TO {relationship_length: 3}]->(o1)
+
+CREATE (c1)-[:OF_BREED]->(b1)
+CREATE (c2)-[:OF_BREED]->(b1)
+CREATE (c3)-[:OF_BREED]->(b2)
+CREATE (c4)-[:OF_BREED]->(b2)
+CREATE (c5)-[:OF_BREED]->(b2)
+\end{lstlisting}
+Here is how the graph looks after adding the kittens:\\
+\includegraphics[width=\textwidth]{kittens1.png}
+
+\subsection{}
+The query can be solved by:
+\begin{lstlisting}
+MATCH (b:Breed)
+OPTIONAL MATCH (b)<-[:OF_BREED]-(c:Cat)
+RETURN b.name, count(c)
+\end{lstlisting}
+Here is what it yields on our example:\\
+\includegraphics[width=\textwidth]{kittens2.png}
+
+Running this on our example yields:\\
+\begin{center}
+\begin{tabular}{|c|c|}
+    \hline
+    \textbf{b.name} & \textbf{count(c)} \\
+    \hline
+    "Siamese" & 2 \\
+    \hline
+    "Bengal" & 3 \\
+    \hline
+\end{tabular}
+\end{center}
+  
+
+\subsection{}
+This question is solved by the query:
+\begin{lstlisting}
+MATCH (o:Owner)<-[:BELONGS_TO]-(c:Cat)-[:OF_BREED]->(b:Breed)
+WITH o, collect(DISTINCT b) AS breeds
+WHERE size(breeds) = 1
+RETURN o.name
+\end{lstlisting}
+
+Running this on our example yields:\\
+\begin{center}
+\begin{tabular}{|c|c|}
+    \hline
+    \textbf{b.name} & \textbf{count(DISTINCT c)} \\
+    \hline
+    "Siamese" & 5 \\
+    \hline
+    "Bengal" & 3 \\
+    \hline
+\end{tabular}
+\end{center}
+  
+
+\subsection{}
+This question is solved by the query:
+\begin{lstlisting}
+MATCH (b:Breed)
+OPTIONAL MATCH (b)<-[:DESCENDANT_OF*0..]-(:Breed)-[:OF_BREED]-(c)
+RETURN b.name, count(DISTINCT c)    
+\end{lstlisting}
+
+Running this on our example yields:\\
+\begin{center}
+\begin{tabular}{|c|}
+    \hline
+    \textbf{o.name} \\
+    \hline
+    "Emily Johnson" \\
+    \hline
+\end{tabular}
+\end{center}
+
+
+\subsection{}
+This question is solved by the query:
+\begin{lstlisting}
+MATCH (b:Breed)
+OPTIONAL MATCH (b)<-[:OF_BREED]-(c:Cat)
+RETURN b.name, count(c)
+\end{lstlisting}
+
+Running this on our example yields:\\
+\begin{center}
+\begin{tabular}{|c|}
+    \hline
+    \textbf{o.name} \\
+    \hline
+    "John Smith" \\
+    \hline
+\end{tabular}
+\end{center}
+
 \end{document}
